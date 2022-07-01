@@ -4,7 +4,7 @@
 
 | item       | version |
 | ---------- | ------- |
-| nginx      |         |
+| nginx      | 1.23    |
 | php        | 7.4.29  |
 | laravel    | v8.6.12 |
 | postgresql | 14.3.1  |
