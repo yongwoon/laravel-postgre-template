@@ -31,9 +31,33 @@ RUN /usr/bin/composer install
 
 - Test project
 
-```bash
-docker-compose up
-```
+  - `backend/.env` ファイルを開けて以下の
+
+  ```bash
+  # 変更前
+  DB_CONNECTION=mysql
+  DB_HOST=127.0.0.1
+  DB_PORT=3306
+  DB_DATABASE=laravel
+  DB_USERNAME=root
+  DB_PASSWORD=
+  ```
+
+  ```bash
+  # 変更後
+  DB_CONNECTION=pgsql
+  DB_HOST=db
+  DB_PORT=5432
+  DB_DATABASE=laravel_development
+  DB_USERNAME=postgreuser
+  DB_PASSWORD=postgrepwd
+  ```
+
+  - docker-compose 実行
+
+  ```bash
+  docker-compose up
+  ```
 
 ## Links
 
