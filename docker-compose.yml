@@ -1,0 +1,97 @@
+version: "3"
+services:
+  nginx:
+    container_name: laravel_postgre_template_nginx
+    build: ./.docker/nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./:/app
+    networks:
+      - laravel_postgre_template_network
+    depends_on:
+      - app
+
+  app:
+    container_name: laravel_postgre_template_app
+    build: ./.docker/app
+    environment:
+      APP_ENV: "development"
+      APP_DEBUG: "true"
+      LOG_CHANNEL: "stderr"
+      DB_CONNECTION: "pgsql"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_DATABASE: "laravel_development"
+      DB_USERNAME: "postgreuser"
+      DB_PASSWORD: "postgrepwd"
+    volumes:
+      - ./backend:/app
+    networks:
+      - laravel_postgre_template_network
+    expose:
+      - 9000
+    depends_on:
+      - db
+
+  db:
+    container_name: laravel_postgre_template_db
+    image: postgres:14.3
+    environment:
+      TZ: "Asia/Tokyo"
+      POSTGRES_USER: "postgreuser"
+      POSTGRES_PASSWORD: "postgrepwd"
+      POSTGRES_DB: "laravel_development"
+    volumes:
+      - ./.docker/db/data:/var/lib/postgresql/data
+      - ./.docker/db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+    networks:
+      - laravel_postgre_template_network
+
+  redis:
+    container_name: laravel_postgre_template_redis
+    image: redis:6.2.2
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass foobared
+    volumes:
+      - redis-data:/data
+    networks:
+      - laravel_postgre_template_network
+
+  minio:
+    container_name: laravel_postgre_template_minio
+    image: minio/minio:RELEASE.2021-06-14T01-29-23Z
+    ports:
+      - "60008:9000"
+    entrypoint: sh
+    command: -c 'mkdir -p /export/laravel-template-bucket && cp -r /policies/* /export/.minio.sys/ && /usr/bin/minio server /export' # 起動時に laravel-template-buket を作成する
+    environment:
+      MINIO_ACCESS_KEY: XXXXXXXXXXXXXXXXXXXX
+      MINIO_SECRET_KEY: YYYYYYYYYYYYYYYYYYYY
+    volumes:
+      - minio-data:/export
+      - ./.docker/minio/policies:/policies
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  mailhog:
+    container_name: laravel_postgre_template_mailhog
+    image: mailhog/mailhog
+    ports:
+      - target: 8025
+        published: ${MAILHOG_PUBLISHED_PORT:-8025}
+        protocol: tcp
+        mode: host
+    networks:
+      - laravel_postgre_template_network
+
+volumes:
+  redis-data:
+  minio-data:
+
+networks:
+  laravel_postgre_template_network:
